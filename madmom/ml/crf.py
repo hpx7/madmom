@@ -117,3 +117,16 @@ class ConditionalRandomField(Processor):
             y_star[i] = bt_pointers[i + 1, y_star[i + 1]]
 
         return y_star
+    
+    def _softmax(x):
+        return np.exp(x) / sum(np.exp(x))
+    
+    def forward(self, observations):
+        num_observations = len(observations)
+        num_states = len(self.pi)
+        delta = np.zeros((num_observations, num_states), dtype=np.float)
+        delta[0] = self.pi * np.dot(observations[0], self.W)
+        softmaxA = np.array([_softmax(x) for x in self.A])
+        for i in range(1, num_observations):
+            delta[i] = delta[i - 1].dot(softmaxA) * np.dot(observations[i], self.W)
+        return delta
