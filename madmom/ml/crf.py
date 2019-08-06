@@ -126,7 +126,6 @@ class ConditionalRandomField(Processor):
         num_states = len(self.pi)
         delta = np.zeros((num_observations, num_states), dtype=np.float)
         delta[0] = self.pi * np.dot(observations[0], self.W)
-        softmaxA = np.array([_softmax(x) for x in self.A])
         for i in range(1, num_observations):
-            delta[i] = delta[i - 1].dot(softmaxA) * np.dot(observations[i], self.W)
-        return delta
+            delta[i] = _softmax(delta[i - 1].dot(self.A) + self.c) * np.dot(observations[i], self.W)
+        return delta + self.tau
